@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { GoogleIcon, AppleIcon } from "@/components/SocialIcons";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 
 type Role = "volunteer" | "organization";
 
@@ -49,11 +50,19 @@ const Register = () => {
   };
 
   const handleSocial = async (provider: "google" | "apple") => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: `${window.location.origin}/profile-setup` },
+    if (provider === "apple") {
+      toast.info("Apple sign-in is not configured yet.");
+      return;
+    }
+    const result = await lovable.auth.signInWithOAuth(provider, {
+      redirect_uri: `${window.location.origin}/profile-setup`,
     });
-    if (error) toast.error(error.message);
+    if (result.redirected) return;
+    if (result.error) {
+      toast.error(result.error.message ?? "Could not sign in with Google.");
+      return;
+    }
+    navigate("/profile-setup");
   };
 
   return (
