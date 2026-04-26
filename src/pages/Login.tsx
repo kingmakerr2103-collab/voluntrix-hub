@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { GoogleIcon, AppleIcon } from "@/components/SocialIcons";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -34,11 +35,19 @@ const Login = () => {
   };
 
   const handleSocial = async (provider: "google" | "apple") => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: `${window.location.origin}/dashboard` },
+    if (provider === "apple") {
+      toast.info("Apple sign-in is not configured yet.");
+      return;
+    }
+    const result = await lovable.auth.signInWithOAuth(provider, {
+      redirect_uri: `${window.location.origin}/dashboard`,
     });
-    if (error) toast.error(error.message);
+    if (result.redirected) return;
+    if (result.error) {
+      toast.error(result.error.message ?? "Could not sign in with Google.");
+      return;
+    }
+    navigate(from, { replace: true });
   };
 
   return (
