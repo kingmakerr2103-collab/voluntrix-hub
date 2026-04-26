@@ -9,22 +9,51 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { GoogleIcon, AppleIcon } from "@/components/SocialIcons";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 type Role = "volunteer" | "organization";
 
 const Register = () => {
   const navigate = useNavigate();
   const [role, setRole] = useState<Role>("volunteer");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters.");
+      return;
+    }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      toast.success("Account created! Let's set up your profile.");
-      navigate("/profile-setup");
-    }, 700);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/dashboard`,
+        data: {
+          full_name: name,
+          role, // 'volunteer' or 'organization' — picked up by handle_new_user trigger
+        },
+      },
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Account created! Let's set up your profile.");
+    navigate("/profile-setup");
+  };
+
+  const handleSocial = async (provider: "google" | "apple") => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/profile-setup` },
+    });
+    if (error) toast.error(error.message);
   };
 
   return (
@@ -72,10 +101,10 @@ const Register = () => {
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-5">
-        <Button variant="outline" size="lg" type="button" onClick={() => toast.info("Google sign-up coming soon")}>
+        <Button variant="outline" size="lg" type="button" onClick={() => handleSocial("google")}>
           <GoogleIcon className="h-5 w-5" /> Google
         </Button>
-        <Button variant="outline" size="lg" type="button" onClick={() => toast.info("Apple sign-up coming soon")}>
+        <Button variant="outline" size="lg" type="button" onClick={() => handleSocial("apple")}>
           <AppleIcon className="h-5 w-5" /> Apple
         </Button>
       </div>
@@ -89,15 +118,39 @@ const Register = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
           <Label htmlFor="name">{role === "organization" ? "Organization name" : "Full name"}</Label>
-          <Input id="name" required className="h-12 rounded-xl" placeholder={role === "organization" ? "Greener Tomorrow Foundation" : "Alex Rivera"} />
+          <Input
+            id="name"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="h-12 rounded-xl"
+            placeholder={role === "organization" ? "Greener Tomorrow Foundation" : "Alex Rivera"}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" required className="h-12 rounded-xl" placeholder="you@community.org" />
+          <Input
+            id="email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="h-12 rounded-xl"
+            placeholder="you@community.org"
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" required className="h-12 rounded-xl" placeholder="At least 8 characters" />
+          <Input
+            id="password"
+            type="password"
+            required
+            minLength={8}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="h-12 rounded-xl"
+            placeholder="At least 8 characters"
+          />
         </div>
 
         <label className="flex items-start gap-2 text-sm cursor-pointer">

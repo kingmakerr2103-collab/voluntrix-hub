@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { AuthLayout } from "@/components/AuthLayout";
 import { Button } from "@/components/ui/button";
@@ -8,24 +8,37 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { GoogleIcon, AppleIcon } from "@/components/SocialIcons";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: string } | null)?.from ?? "/dashboard";
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      toast.success("Welcome back!");
-      navigate("/dashboard");
-    }, 700);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Welcome back!");
+    navigate(from, { replace: true });
   };
 
-  const handleSocial = (provider: string) => {
-    toast.info(`${provider} sign-in will activate when auth is wired up.`);
+  const handleSocial = async (provider: "google" | "apple") => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    });
+    if (error) toast.error(error.message);
   };
 
   return (
@@ -42,10 +55,10 @@ const Login = () => {
       }
     >
       <div className="grid grid-cols-2 gap-3 mb-5">
-        <Button variant="outline" size="lg" onClick={() => handleSocial("Google")}>
+        <Button variant="outline" size="lg" type="button" onClick={() => handleSocial("google")}>
           <GoogleIcon className="h-5 w-5" /> Google
         </Button>
-        <Button variant="outline" size="lg" onClick={() => handleSocial("Apple")}>
+        <Button variant="outline" size="lg" type="button" onClick={() => handleSocial("apple")}>
           <AppleIcon className="h-5 w-5" /> Apple
         </Button>
       </div>
@@ -59,7 +72,15 @@ const Login = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="you@community.org" required className="h-12 rounded-xl" />
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@community.org"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="h-12 rounded-xl"
+          />
         </div>
 
         <div className="space-y-1.5">
@@ -75,6 +96,8 @@ const Login = () => {
               type={showPwd ? "text" : "password"}
               placeholder="••••••••"
               required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="h-12 rounded-xl pr-10"
             />
             <button
