@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ALL_SKILLS = [
   "Teaching", "Healthcare", "Cooking", "Gardening", "Tech support", "Translation",
@@ -36,10 +38,13 @@ const AVAILABILITY = [
 
 const ProfileSetup = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [step, setStep] = useState(0);
   const [skills, setSkills] = useState<string[]>([]);
   const [interests, setInterests] = useState<string[]>([]);
   const [availability, setAvailability] = useState<string[]>([]);
+  const [city, setCity] = useState("");
+  const [country, setCountry] = useState("");
   const [loading, setLoading] = useState(false);
 
   const steps = ["Photo", "Skills", "Location", "Availability", "Interests"];
@@ -48,12 +53,31 @@ const ProfileSetup = () => {
     setArr(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
   };
 
-  const finish = () => {
+  const finish = async () => {
+    if (!user) {
+      toast.error("Please sign in to finish setup.");
+      navigate("/login");
+      return;
+    }
     setLoading(true);
-    setTimeout(() => {
-      toast.success("Welcome to Voluntrix! 🎉");
-      navigate("/dashboard");
-    }, 600);
+    const location = [city, country].filter(Boolean).join(", ");
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        skills,
+        interests,
+        availability: availability.join(","),
+        location: location || null,
+        onboarding_complete: true,
+      })
+      .eq("user_id", user.id);
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Welcome to Voluntrix! 🎉");
+    navigate("/dashboard");
   };
 
   const next = () => (step < steps.length - 1 ? setStep(step + 1) : finish());
@@ -128,19 +152,31 @@ const ProfileSetup = () => {
               <div className="space-y-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="city">City</Label>
-                  <Input id="city" placeholder="Lisbon" className="h-12 rounded-xl" />
+                  <Input
+                    id="city"
+                    placeholder="Lisbon"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="h-12 rounded-xl"
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="country">Country</Label>
-                    <Input id="country" placeholder="Portugal" className="h-12 rounded-xl" />
+                    <Input
+                      id="country"
+                      placeholder="Portugal"
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      className="h-12 rounded-xl"
+                    />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="radius">Radius</Label>
                     <Input id="radius" placeholder="10 km" className="h-12 rounded-xl" />
                   </div>
                 </div>
-                <Button variant="soft" size="lg" className="w-full">
+                <Button variant="soft" size="lg" className="w-full" type="button">
                   <MapPin className="h-4 w-4" /> Use my current location
                 </Button>
               </div>
