@@ -13,9 +13,9 @@ type Status = Database["public"]["Enums"]["project_status"];
 const STATUS_COLOR: Record<Status, string> = {
   planning: "bg-secondary/15 text-secondary",
   active: "bg-primary/15 text-primary",
-  paused: "bg-warning/15 text-warning",
+  on_hold: "bg-warning/15 text-warning",
   completed: "bg-muted text-muted-foreground",
-  archived: "bg-muted text-muted-foreground",
+  cancelled: "bg-destructive/15 text-destructive",
 };
 
 const Projects = () => {
@@ -44,7 +44,7 @@ const Projects = () => {
         </header>
 
         <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 animate-fade-up">
-          {(["all", "active", "planning", "paused", "completed"] as const).map((t) => (
+          {(["all", "active", "planning", "on_hold", "completed"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
