@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Compass, MapPin, Search, Filter, Loader2, ArrowRight, AlertTriangle, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
+import { CreateOpportunityDialog } from "@/components/CreateOpportunityDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
@@ -96,10 +97,13 @@ const Opportunities = () => {
   return (
     <AppShell>
       <div className="mx-auto max-w-2xl px-5 pt-8 pb-6 space-y-5">
-        <header className="animate-fade-up">
-          <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Discover</p>
-          <h1 className="text-3xl font-display font-bold">Opportunities</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Find a way to help that matches your skills.</p>
+        <header className="flex items-end justify-between gap-3 animate-fade-up">
+          <div>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Discover</p>
+            <h1 className="text-3xl font-display font-bold">Opportunities</h1>
+            <p className="text-muted-foreground mt-1 text-sm">Find a way to help that matches your skills.</p>
+          </div>
+          <CreateOpportunityDialog />
         </header>
 
         {/* Search */}
