@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Camera, Check, Clock, Loader2, MapPin, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Clock, Loader2, MapPin, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,7 +50,7 @@ const ProfileSetup = () => {
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const steps = ["Photo", "Skills", "Location", "Availability", "Interests"];
+  const steps = ["Skills", "Location", "Availability", "Interests"];
 
   const toggle = (arr: string[], setArr: (s: string[]) => void, v: string) => {
     setArr(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
@@ -125,22 +125,6 @@ const ProfileSetup = () => {
 
         <div className="flex-1 animate-fade-up" key={step}>
           {step === 0 && (
-            <Section title="Add a profile photo" subtitle="Help organizers recognize you in the field.">
-              <div className="flex justify-center my-8">
-                <button className="relative h-36 w-36 rounded-full bg-gradient-impact p-1 shadow-glow-primary">
-                  <div className="h-full w-full rounded-full bg-card flex items-center justify-center">
-                    <Camera className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <span className="absolute bottom-1 right-1 h-9 w-9 rounded-full bg-gradient-cta flex items-center justify-center text-accent-foreground shadow-glow-cta">
-                    <Camera className="h-4 w-4" />
-                  </span>
-                </button>
-              </div>
-              <p className="text-center text-sm text-muted-foreground">JPG, PNG. Max 5 MB.</p>
-            </Section>
-          )}
-
-          {step === 1 && (
             <Section title="What can you do?" subtitle="Pick all the skills you'd love to share." icon={Sparkles}>
               <div className="flex flex-wrap gap-2">
                 {ALL_SKILLS.map((s) => (
@@ -152,7 +136,7 @@ const ProfileSetup = () => {
             </Section>
           )}
 
-          {step === 2 && (
+          {step === 1 && (
             <Section title="Where are you based?" subtitle="We'll show needs near you." icon={MapPin}>
               <div className="space-y-3">
                 <div className="space-y-1.5">
@@ -202,7 +186,7 @@ const ProfileSetup = () => {
             </Section>
           )}
 
-          {step === 3 && (
+          {step === 2 && (
             <Section title="When are you free?" subtitle="Pick the times that work for you." icon={Clock}>
               <div className="grid grid-cols-2 gap-2.5">
                 {AVAILABILITY.map((a) => (
@@ -227,7 +211,7 @@ const ProfileSetup = () => {
             </Section>
           )}
 
-          {step === 4 && (
+          {step === 3 && (
             <Section title="What causes move you?" subtitle="We'll match you with what matters most.">
               <div className="grid grid-cols-2 gap-2.5">
                 {INTERESTS.map((i) => (

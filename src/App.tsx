@@ -14,6 +14,7 @@ import ProfileSetup from "./pages/ProfileSetup.tsx";
 import ChooseRole from "./pages/ChooseRole.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Opportunities from "./pages/Opportunities.tsx";
+import MyOpportunities from "./pages/MyOpportunities.tsx";
 import MapView from "./pages/MapView.tsx";
 import Projects from "./pages/Projects.tsx";
 import Profile from "./pages/Profile.tsx";
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/profile-setup" element={<ProtectedRoute><ProfileSetup /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
+            <Route path="/my-opportunities" element={<ProtectedRoute><MyOpportunities /></ProtectedRoute>} />
             <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
             <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

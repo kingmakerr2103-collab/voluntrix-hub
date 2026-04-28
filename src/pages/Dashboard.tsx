@@ -284,6 +284,23 @@ const Dashboard = () => {
           />
         </section>
 
+        {/* Organizer shortcut */}
+        <Link
+          to="/my-opportunities"
+          className="flex items-center justify-between rounded-3xl bg-card border border-border px-5 py-4 hover:shadow-md transition-shadow animate-fade-up"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-gradient-trust flex items-center justify-center text-white">
+              <Users className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="font-semibold text-sm">Manage your posts</p>
+              <p className="text-xs text-muted-foreground">Review applicants & approve volunteers</p>
+            </div>
+          </div>
+          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
+
         {/* Map preview */}
         <section className="animate-fade-up">
           <SectionHeader title="Needs near you" to="/map" />
