@@ -119,6 +119,20 @@ const MapView = () => {
           ))}
         </div>
 
+        <div className="flex items-center gap-2 flex-wrap animate-fade-up">
+          <UseMyLocationButton
+            size="sm"
+            variant="soft"
+            label={userLoc ? "Re-center on me" : "Use my current location"}
+            onLocate={(loc) => saveLocation(loc.latitude, loc.longitude, loc.address)}
+          />
+          {userLoc && (
+            <span className="text-[11px] text-muted-foreground font-mono">
+              📍 {userLoc.lat.toFixed(4)}, {userLoc.lon.toFixed(4)}
+            </span>
+          )}
+        </div>
+
         {/* Real Leaflet map */}
         <div className="relative rounded-3xl overflow-hidden border border-border shadow-md aspect-[4/5] bg-muted animate-fade-up">
           {loading && (
@@ -126,7 +140,8 @@ const MapView = () => {
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
           )}
-          <LeafletMap pins={pins} />
+          <LeafletMap pins={pins} userLocation={userLoc} />
+
 
           {!loading && pins.length === 0 && (
             <div className="absolute inset-0 z-[400] flex flex-col items-center justify-center text-center px-6 bg-card/85 backdrop-blur-sm">
