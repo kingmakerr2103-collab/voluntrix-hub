@@ -47,6 +47,7 @@ const ProfileSetup = () => {
   const [availability, setAvailability] = useState<string[]>([]);
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
+  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const steps = ["Photo", "Skills", "Location", "Availability", "Interests"];
