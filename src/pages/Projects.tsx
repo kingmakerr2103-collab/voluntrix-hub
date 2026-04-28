@@ -27,7 +27,7 @@ const Projects = () => {
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase.from("projects").select("*").order("created_at", { ascending: false });
-      if (error) toast({ title: "Couldn't load projects", description: error.message, variant: "destructive" });
+      if (error) toast({ title: "Couldn't load projects", description: toUserMessage(error), variant: "destructive" });
       setProjects((data ?? []) as Project[]);
       setLoading(false);
     })();

@@ -42,7 +42,7 @@ export const CreateOpportunityDialog = ({ onCreated }: Props) => {
         .eq("user_id", user.id)
         .in("role", ["admin", "owner"]);
       if (error) {
-        toast({ title: "Couldn't load organizations", description: error.message, variant: "destructive" });
+        toast({ title: "Couldn't load organizations", description: toUserMessage(error), variant: "destructive" });
         return;
       }
       const list: Org[] = (data ?? [])
@@ -88,7 +88,7 @@ export const CreateOpportunityDialog = ({ onCreated }: Props) => {
     });
     setSubmitting(false);
     if (error) {
-      toast({ title: "Couldn't create", description: error.message, variant: "destructive" });
+      toast({ title: "Couldn't create", description: toUserMessage(error), variant: "destructive" });
       return;
     }
     toast({ title: "Opportunity posted", description: "Volunteers can now find it on the map." });

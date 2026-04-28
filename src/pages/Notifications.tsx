@@ -35,7 +35,7 @@ const Notifications = () => {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
       if (!active) return;
-      if (error) toast({ title: "Couldn't load notifications", description: error.message, variant: "destructive" });
+      if (error) toast({ title: "Couldn't load notifications", description: toUserMessage(error), variant: "destructive" });
       setItems((data ?? []) as Notification[]);
       setLoading(false);
     })();
@@ -62,12 +62,12 @@ const Notifications = () => {
   const markAllRead = async () => {
     if (!user) return;
     const { error } = await supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
-    if (error) toast({ title: "Couldn't update", description: error.message, variant: "destructive" });
+    if (error) toast({ title: "Couldn't update", description: toUserMessage(error), variant: "destructive" });
   };
 
   const remove = async (id: string) => {
     const { error } = await supabase.from("notifications").delete().eq("id", id);
-    if (error) toast({ title: "Couldn't delete", description: error.message, variant: "destructive" });
+    if (error) toast({ title: "Couldn't delete", description: toUserMessage(error), variant: "destructive" });
   };
 
   const unreadCount = items.filter((n) => !n.read).length;

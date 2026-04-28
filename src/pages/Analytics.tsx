@@ -41,7 +41,7 @@ const Analytics = () => {
       if (oRes.error || aRes.error || pRes.error) {
         toast({
           title: "Couldn't load analytics",
-          description: oRes.error?.message ?? aRes.error?.message ?? pRes.error?.message,
+          description: toUserMessage(oRes.error ?? aRes.error ?? pRes.error),
           variant: "destructive",
         });
       }
