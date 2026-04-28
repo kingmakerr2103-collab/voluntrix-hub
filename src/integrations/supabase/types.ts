@@ -474,7 +474,54 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_public: {
+        Row: {
+          availability: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          interests: string[] | null
+          location: string | null
+          onboarding_complete: boolean | null
+          phone: string | null
+          skills: string[] | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          availability?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          interests?: string[] | null
+          location?: string | null
+          onboarding_complete?: boolean | null
+          phone?: never
+          skills?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          availability?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          interests?: string[] | null
+          location?: string | null
+          onboarding_complete?: boolean | null
+          phone?: never
+          skills?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
