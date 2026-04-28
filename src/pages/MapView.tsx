@@ -1,3 +1,4 @@
+import { toUserMessage } from "@/lib/errors";
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, MapPin, AlertTriangle, Layers } from "lucide-react";
 import { AppShell } from "@/components/AppShell";

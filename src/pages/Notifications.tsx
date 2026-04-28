@@ -1,3 +1,4 @@
+import { toUserMessage } from "@/lib/errors";
 import { useEffect, useState } from "react";
 import { Bell, Loader2, CheckCheck, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
