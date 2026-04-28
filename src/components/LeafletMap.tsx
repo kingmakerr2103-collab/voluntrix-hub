@@ -55,7 +55,20 @@ interface Props {
   zoom?: number;
   className?: string;
   height?: string;
+  /** If set, draws a "you are here" marker at these coords. */
+  userLocation?: { lat: number; lon: number } | null;
 }
+
+const userIcon = L.divIcon({
+  html: `
+    <div style="position:relative;width:24px;height:24px;">
+      <div style="position:absolute;inset:0;border-radius:9999px;background:hsl(217 91% 60%);opacity:0.25;animation:pulse 2s infinite;"></div>
+      <div style="position:absolute;top:5px;left:5px;width:14px;height:14px;border-radius:9999px;background:hsl(217 91% 60%);border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>
+    </div>`,
+  className: "voluntrix-user-marker",
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+});
 
 export const LeafletMap = ({
   pins,
@@ -63,17 +76,26 @@ export const LeafletMap = ({
   zoom = 2,
   className = "",
   height = "100%",
+  userLocation = null,
 }: Props) => {
   const validPins = useMemo(
     () => pins.filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lon)),
     [pins],
   );
 
+  const fitTargets = useMemo(() => {
+    const arr: MapPin[] = [...validPins];
+    if (userLocation) {
+      arr.push({ id: "__user__", lat: userLocation.lat, lon: userLocation.lon, title: "You" });
+    }
+    return arr;
+  }, [validPins, userLocation]);
+
   return (
     <div className={className} style={{ height, width: "100%" }}>
       <MapContainer
-        center={center}
-        zoom={zoom}
+        center={userLocation ? [userLocation.lat, userLocation.lon] : center}
+        zoom={userLocation ? 12 : zoom}
         scrollWheelZoom
         style={{ height: "100%", width: "100%", borderRadius: "inherit" }}
       >
@@ -81,6 +103,13 @@ export const LeafletMap = ({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        {userLocation && (
+          <Marker position={[userLocation.lat, userLocation.lon]} icon={userIcon}>
+            <Popup>
+              <strong>You are here</strong>
+            </Popup>
+          </Marker>
+        )}
         {validPins.map((p) => (
           <Marker
             key={p.id}
@@ -98,7 +127,7 @@ export const LeafletMap = ({
             </Popup>
           </Marker>
         ))}
-        <FitBounds pins={validPins} />
+        <FitBounds pins={fitTargets} />
       </MapContainer>
     </div>
   );

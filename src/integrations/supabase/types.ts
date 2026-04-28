@@ -330,7 +330,9 @@ export type Database = {
           full_name: string | null
           id: string
           interests: string[] | null
+          latitude: number | null
           location: string | null
+          longitude: number | null
           onboarding_complete: boolean
           phone: string | null
           skills: string[] | null
@@ -345,7 +347,9 @@ export type Database = {
           full_name?: string | null
           id?: string
           interests?: string[] | null
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           onboarding_complete?: boolean
           phone?: string | null
           skills?: string[] | null
@@ -360,7 +364,9 @@ export type Database = {
           full_name?: string | null
           id?: string
           interests?: string[] | null
+          latitude?: number | null
           location?: string | null
+          longitude?: number | null
           onboarding_complete?: boolean
           phone?: string | null
           skills?: string[] | null

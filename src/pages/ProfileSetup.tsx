@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { UseMyLocationButton } from "@/components/UseMyLocationButton";
+import { toUserMessage } from "@/lib/errors";
 
 const ALL_SKILLS = [
   "Teaching", "Healthcare", "Cooking", "Gardening", "Tech support", "Translation",
@@ -45,6 +47,7 @@ const ProfileSetup = () => {
   const [availability, setAvailability] = useState<string[]>([]);
   const [city, setCity] = useState("");
   const [country, setCountry] = useState("");
+  const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const steps = ["Photo", "Skills", "Location", "Availability", "Interests"];
@@ -68,12 +71,14 @@ const ProfileSetup = () => {
         interests,
         availability: availability.join(","),
         location: location || null,
+        latitude: coords?.lat ?? null,
+        longitude: coords?.lon ?? null,
         onboarding_complete: true,
       })
       .eq("user_id", user.id);
     setLoading(false);
     if (error) {
-      toast.error(error.message);
+      toast.error(toUserMessage(error));
       return;
     }
     toast.success("Welcome to Voluntrix! 🎉");
@@ -176,9 +181,23 @@ const ProfileSetup = () => {
                     <Input id="radius" placeholder="10 km" className="h-12 rounded-xl" />
                   </div>
                 </div>
-                <Button variant="soft" size="lg" className="w-full" type="button">
-                  <MapPin className="h-4 w-4" /> Use my current location
-                </Button>
+                <UseMyLocationButton
+                  className="w-full"
+                  onLocate={(loc) => {
+                    setCoords({ lat: loc.latitude, lon: loc.longitude });
+                    if (loc.address) {
+                      // Heuristic: last segment is country, prefer first as city.
+                      const parts = loc.address.split(",").map((p) => p.trim());
+                      if (!city) setCity(parts[0] ?? "");
+                      if (!country) setCountry(parts[parts.length - 1] ?? "");
+                    }
+                  }}
+                />
+                {coords && (
+                  <p className="text-[11px] text-muted-foreground font-mono">
+                    📍 {coords.lat.toFixed(5)}, {coords.lon.toFixed(5)}
+                  </p>
+                )}
               </div>
             </Section>
           )}
