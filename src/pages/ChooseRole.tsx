@@ -24,11 +24,19 @@ const ChooseRole = () => {
       return;
     }
     setLoading(true);
+    // The DB trigger may have inserted a default 'volunteer' role on signup.
+    // Remove existing self-serve roles, then insert the user's chosen one.
+    await supabase
+      .from("user_roles")
+      .delete()
+      .eq("user_id", user.id)
+      .in("role", ["volunteer", "organization"]);
+
     const { error } = await supabase
       .from("user_roles")
       .insert({ user_id: user.id, role });
     setLoading(false);
-    if (error && !/duplicate|unique/i.test(error.message)) {
+    if (error) {
       toast.error(toUserMessage(error));
       return;
     }
