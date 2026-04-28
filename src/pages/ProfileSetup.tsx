@@ -71,12 +71,14 @@ const ProfileSetup = () => {
         interests,
         availability: availability.join(","),
         location: location || null,
+        latitude: coords?.lat ?? null,
+        longitude: coords?.lon ?? null,
         onboarding_complete: true,
       })
       .eq("user_id", user.id);
     setLoading(false);
     if (error) {
-      toast.error(error.message);
+      toast.error(toUserMessage(error));
       return;
     }
     toast.success("Welcome to Voluntrix! 🎉");
