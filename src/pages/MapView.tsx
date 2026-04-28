@@ -7,6 +7,8 @@ import { LeafletMap, type MapPin as MapPinType } from "@/components/LeafletMap";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { UseMyLocationButton } from "@/components/UseMyLocationButton";
 import type { Database } from "@/integrations/supabase/types";
 
 type Opportunity = Database["public"]["Tables"]["opportunities"]["Row"];
@@ -20,24 +22,44 @@ const URGENCY_RING: Record<Urgency, string> = {
 };
 
 const MapView = () => {
+  const { user } = useAuth();
   const [items, setItems] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Urgency | "all">("all");
   const [selected, setSelected] = useState<Opportunity | null>(null);
+  const [userLoc, setUserLoc] = useState<{ lat: number; lon: number } | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase
+      const oppsP = supabase
         .from("opportunities")
         .select("*")
         .eq("status", "open")
         .order("created_at", { ascending: false });
+      const profileP = user
+        ? supabase.from("profiles").select("latitude, longitude").eq("user_id", user.id).maybeSingle()
+        : Promise.resolve({ data: null, error: null } as { data: null; error: null });
+      const [{ data, error }, profileRes] = await Promise.all([oppsP, profileP]);
       if (error)
         toast({ title: "Couldn't load map", description: toUserMessage(error), variant: "destructive" });
       setItems((data ?? []) as Opportunity[]);
+      const p = (profileRes as { data: { latitude: number | null; longitude: number | null } | null }).data;
+      if (p?.latitude != null && p?.longitude != null) {
+        setUserLoc({ lat: p.latitude, lon: p.longitude });
+      }
       setLoading(false);
     })();
-  }, []);
+  }, [user]);
+
+  const saveLocation = async (lat: number, lon: number, address: string | null) => {
+    setUserLoc({ lat, lon });
+    if (!user) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ latitude: lat, longitude: lon, location: address ?? undefined })
+      .eq("user_id", user.id);
+    if (error) toast({ title: "Couldn't save location", description: toUserMessage(error), variant: "destructive" });
+  };
 
   const filtered = useMemo(
     () => (filter === "all" ? items : items.filter((o) => o.urgency === filter)),
