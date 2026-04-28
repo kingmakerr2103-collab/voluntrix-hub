@@ -40,7 +40,7 @@ const Opportunities = () => {
   const [query, setQuery] = useState("");
   const [urgency, setUrgency] = useState<Urgency | "all">("all");
   const [category, setCategory] = useState<string>("All");
-  const [statusFilter, setStatusFilter] = useState<"open" | "in_progress" | "completed" | "all">("open");
+  const [statusFilter, setStatusFilter] = useState<"open" | "closed" | "completed" | "all">("open");
   const [selected, setSelected] = useState<Opportunity | null>(null);
   const [applying, setApplying] = useState(false);
   const [myApps, setMyApps] = useState<Record<string, AppStatus>>({});
@@ -189,9 +189,9 @@ const Opportunities = () => {
 
         {/* Status (live) chips */}
         <FilterRow label="Status">
-          {(["open", "in_progress", "completed", "all"] as const).map((s) => (
+          {(["open", "closed", "completed", "all"] as const).map((s) => (
             <Chip key={s} active={statusFilter === s} onClick={() => setStatusFilter(s)}>
-              {s === "open" ? "Upcoming" : s === "in_progress" ? "Ongoing" : s === "completed" ? "Completed" : "All"}
+              {s === "open" ? "Upcoming" : s === "closed" ? "Ongoing" : s === "completed" ? "Completed" : "All"}
             </Chip>
           ))}
         </FilterRow>
