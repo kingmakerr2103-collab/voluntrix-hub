@@ -11,6 +11,7 @@ import Login from "./pages/Login.tsx";
 import Register from "./pages/Register.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
 import ProfileSetup from "./pages/ProfileSetup.tsx";
+import ChooseRole from "./pages/ChooseRole.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Opportunities from "./pages/Opportunities.tsx";
 import MapView from "./pages/MapView.tsx";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
+            <Route path="/choose-role" element={<ProtectedRoute><ChooseRole /></ProtectedRoute>} />
             <Route path="/profile-setup" element={<ProtectedRoute><ProfileSetup /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/opportunities" element={<ProtectedRoute><Opportunities /></ProtectedRoute>} />
