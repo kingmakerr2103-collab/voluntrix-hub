@@ -180,6 +180,8 @@ export type Database = {
         Row: {
           capacity: number | null
           category: string | null
+          contact_email: string | null
+          contact_phone: string | null
           created_at: string
           created_by: string
           description: string | null
@@ -188,17 +190,21 @@ export type Database = {
           latitude: number | null
           location: string | null
           longitude: number | null
-          organization_id: string
+          organization_id: string | null
+          purpose: string | null
           skills_required: string[]
           starts_at: string | null
           status: Database["public"]["Enums"]["opportunity_status"]
           title: string
           updated_at: string
           urgency: Database["public"]["Enums"]["urgency_level"]
+          volunteers_needed: number | null
         }
         Insert: {
           capacity?: number | null
           category?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -207,17 +213,21 @@ export type Database = {
           latitude?: number | null
           location?: string | null
           longitude?: number | null
-          organization_id: string
+          organization_id?: string | null
+          purpose?: string | null
           skills_required?: string[]
           starts_at?: string | null
           status?: Database["public"]["Enums"]["opportunity_status"]
           title: string
           updated_at?: string
           urgency?: Database["public"]["Enums"]["urgency_level"]
+          volunteers_needed?: number | null
         }
         Update: {
           capacity?: number | null
           category?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
@@ -226,13 +236,15 @@ export type Database = {
           latitude?: number | null
           location?: string | null
           longitude?: number | null
-          organization_id?: string
+          organization_id?: string | null
+          purpose?: string | null
           skills_required?: string[]
           starts_at?: string | null
           status?: Database["public"]["Enums"]["opportunity_status"]
           title?: string
           updated_at?: string
           urgency?: Database["public"]["Enums"]["urgency_level"]
+          volunteers_needed?: number | null
         }
         Relationships: [
           {
