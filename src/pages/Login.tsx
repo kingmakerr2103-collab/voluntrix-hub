@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { GoogleIcon, AppleIcon } from "@/components/SocialIcons";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { resolvePostAuthRoute } from "@/lib/postAuthRoute";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -24,14 +25,15 @@ const Login = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
       toast.error(error.message);
       return;
     }
     toast.success("Welcome back!");
-    navigate(from, { replace: true });
+    const next = data.user ? await resolvePostAuthRoute(data.user.id, from) : from;
+    navigate(next, { replace: true });
   };
 
   const handleSocial = async (provider: "google" | "apple") => {
