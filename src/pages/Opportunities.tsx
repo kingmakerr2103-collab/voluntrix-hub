@@ -27,7 +27,7 @@ const STATUS_BADGE: Record<AppStatus, { label: string; cls: string; icon: typeof
   pending: { label: "Pending", cls: "bg-secondary/15 text-secondary", icon: ClockIcon },
   accepted: { label: "Accepted", cls: "bg-primary/15 text-primary", icon: CheckCircle2 },
   rejected: { label: "Rejected", cls: "bg-destructive/15 text-destructive", icon: XCircle },
-  completed: { label: "Completed", cls: "bg-muted text-muted-foreground", icon: CheckCircle2 },
+  withdrawn: { label: "Withdrawn", cls: "bg-muted text-muted-foreground", icon: XCircle },
 };
 
 type Organizer = { full_name: string | null; avatar_url: string | null };
