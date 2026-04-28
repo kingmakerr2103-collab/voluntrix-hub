@@ -1,6 +1,8 @@
 // Voluntrix AI assistant — uses Lovable AI Gateway (no extra API key).
 // Streams chat responses for the in-app Vox chatbot.
-// CORS-enabled, public (verify_jwt = false in supabase/config.toml).
+// Requires authentication + enforces input-size limits + simple in-memory rate limit.
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,16 +17,97 @@ Your job:
 - When relevant, suggest navigating to: /opportunities, /map, /projects, /messages, /profile.
 - Never make up data about specific opportunities — encourage the user to open the relevant screen.`;
 
+const MAX_MESSAGES = 20;
+const MAX_CONTENT_CHARS = 2000;
+const ALLOWED_ROLES = new Set(["user", "assistant"]);
+
+// Simple in-memory rate limit per user (best-effort; isolate per worker instance).
+const rateMap = new Map<string, { count: number; reset: number }>();
+const RATE_LIMIT = 20; // requests
+const RATE_WINDOW_MS = 60_000; // per minute
+
+function rateLimited(key: string): boolean {
+  const now = Date.now();
+  const entry = rateMap.get(key);
+  if (!entry || entry.reset < now) {
+    rateMap.set(key, { count: 1, reset: now + RATE_WINDOW_MS });
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_LIMIT;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // 1) Require authenticated user
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    if (!token) {
+      return new Response(JSON.stringify({ error: "Authentication required" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnon = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const authClient = createClient(supabaseUrl, supabaseAnon, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+    const { data: userData, error: userErr } = await authClient.auth.getUser(token);
+    if (userErr || !userData?.user) {
+      return new Response(JSON.stringify({ error: "Invalid session" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = userData.user.id;
+
+    // 2) Per-user rate limit
+    if (rateLimited(userId)) {
+      return new Response(JSON.stringify({ error: "Too many requests. Please slow down." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // 3) Validate payload
     const { messages } = await req.json();
     if (!Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: "messages must be an array" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+    if (messages.length === 0 || messages.length > MAX_MESSAGES) {
+      return new Response(JSON.stringify({ error: `messages length must be 1..${MAX_MESSAGES}` }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const sanitized: Array<{ role: string; content: string }> = [];
+    for (const m of messages) {
+      if (
+        !m ||
+        typeof m !== "object" ||
+        typeof m.role !== "string" ||
+        typeof m.content !== "string" ||
+        !ALLOWED_ROLES.has(m.role)
+      ) {
+        return new Response(JSON.stringify({ error: "Invalid message shape" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (m.content.length === 0 || m.content.length > MAX_CONTENT_CHARS) {
+        return new Response(JSON.stringify({ error: `Each message must be 1..${MAX_CONTENT_CHARS} chars` }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      sanitized.push({ role: m.role, content: m.content });
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -44,7 +127,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         stream: true,
-        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
+        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...sanitized],
       }),
     });
 
@@ -55,14 +138,15 @@ Deno.serve(async (req) => {
       });
     }
     if (response.status === 402) {
-      return new Response(JSON.stringify({ error: "AI credits depleted. Add credits in Lovable AI." }), {
+      return new Response(JSON.stringify({ error: "AI credits depleted." }), {
         status: 402,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     if (!response.ok || !response.body) {
       const text = await response.text();
-      return new Response(JSON.stringify({ error: "AI gateway error", detail: text }), {
+      console.error("AI gateway error", text);
+      return new Response(JSON.stringify({ error: "AI gateway error" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -78,7 +162,7 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error("ai-chat error", err);
-    return new Response(JSON.stringify({ error: (err as Error).message }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
