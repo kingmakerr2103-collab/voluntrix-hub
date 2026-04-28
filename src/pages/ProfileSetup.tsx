@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { UseMyLocationButton } from "@/components/UseMyLocationButton";
+import { toUserMessage } from "@/lib/errors";
 
 const ALL_SKILLS = [
   "Teaching", "Healthcare", "Cooking", "Gardening", "Tech support", "Translation",
