@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -40,10 +41,21 @@ export const ChatbotFAB = () => {
     setStreaming(true);
 
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        throw new Error("Please sign in to chat with Vox.");
+      }
+      // Trim history client-side too (server enforces 20 max)
+      const trimmed = next.slice(-20);
       const res = await fetch(FUNCTION_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+        },
+        body: JSON.stringify({ messages: trimmed }),
       });
       if (!res.ok || !res.body) {
         const j = await res.json().catch(() => ({}));

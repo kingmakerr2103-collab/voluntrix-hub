@@ -1,3 +1,4 @@
+import { toUserMessage } from "@/lib/errors";
 import { useEffect, useMemo, useState } from "react";
 import { Compass, MapPin, Search, Filter, Loader2, ArrowRight, AlertTriangle, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -37,7 +38,7 @@ const Opportunities = () => {
         .eq("status", "open")
         .order("created_at", { ascending: false });
       if (!active) return;
-      if (error) toast({ title: "Couldn't load opportunities", description: error.message, variant: "destructive" });
+      if (error) toast({ title: "Couldn't load opportunities", description: toUserMessage(error), variant: "destructive" });
       setItems((data ?? []) as Opportunity[]);
       setLoading(false);
     })();
@@ -87,7 +88,7 @@ const Opportunities = () => {
     });
     setApplying(false);
     if (error) {
-      toast({ title: "Couldn't apply", description: error.message, variant: "destructive" });
+      toast({ title: "Couldn't apply", description: toUserMessage(error), variant: "destructive" });
       return;
     }
     toast({ title: "Application sent", description: `You applied to "${opp.title}".` });

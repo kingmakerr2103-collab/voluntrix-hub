@@ -1,3 +1,4 @@
+import { toUserMessage } from "@/lib/errors";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Loader2, MessageSquare, Send } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -128,7 +129,7 @@ const ConversationView = ({
         .eq("conversation_id", conversation.id)
         .order("created_at", { ascending: true });
       if (!active) return;
-      if (error) toast({ title: "Couldn't load messages", description: error.message, variant: "destructive" });
+      if (error) toast({ title: "Couldn't load messages", description: toUserMessage(error), variant: "destructive" });
       setMessages((data ?? []) as Message[]);
       setLoading(false);
     })();
@@ -164,7 +165,7 @@ const ConversationView = ({
     });
     setSending(false);
     if (error) {
-      toast({ title: "Couldn't send", description: error.message, variant: "destructive" });
+      toast({ title: "Couldn't send", description: toUserMessage(error), variant: "destructive" });
       setInput(content);
     }
   };

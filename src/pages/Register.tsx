@@ -36,7 +36,8 @@ const Register = () => {
         emailRedirectTo: `${window.location.origin}/dashboard`,
         data: {
           full_name: name,
-          role, // 'volunteer' or 'organization' — picked up by handle_new_user trigger
+          // Only safe self-serve roles. Server trigger also validates and rejects 'admin'.
+          role: role === "organization" ? "organization" : "volunteer",
         },
       },
     });

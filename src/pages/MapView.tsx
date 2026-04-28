@@ -1,3 +1,4 @@
+import { toUserMessage } from "@/lib/errors";
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, MapPin, AlertTriangle, Layers } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -32,7 +33,7 @@ const MapView = () => {
         .eq("status", "open")
         .order("created_at", { ascending: false });
       if (error)
-        toast({ title: "Couldn't load map", description: error.message, variant: "destructive" });
+        toast({ title: "Couldn't load map", description: toUserMessage(error), variant: "destructive" });
       setItems((data ?? []) as Opportunity[]);
       setLoading(false);
     })();
