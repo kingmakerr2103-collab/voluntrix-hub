@@ -181,9 +181,23 @@ const ProfileSetup = () => {
                     <Input id="radius" placeholder="10 km" className="h-12 rounded-xl" />
                   </div>
                 </div>
-                <Button variant="soft" size="lg" className="w-full" type="button">
-                  <MapPin className="h-4 w-4" /> Use my current location
-                </Button>
+                <UseMyLocationButton
+                  className="w-full"
+                  onLocate={(loc) => {
+                    setCoords({ lat: loc.latitude, lon: loc.longitude });
+                    if (loc.address) {
+                      // Heuristic: last segment is country, prefer first as city.
+                      const parts = loc.address.split(",").map((p) => p.trim());
+                      if (!city) setCity(parts[0] ?? "");
+                      if (!country) setCountry(parts[parts.length - 1] ?? "");
+                    }
+                  }}
+                />
+                {coords && (
+                  <p className="text-[11px] text-muted-foreground font-mono">
+                    📍 {coords.lat.toFixed(5)}, {coords.lon.toFixed(5)}
+                  </p>
+                )}
               </div>
             </Section>
           )}
